@@ -1,0 +1,74 @@
+package Pacematic;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class Ebay {
+	
+	private static By searchBox = By.xpath("//input[@title='Search']");
+	private static By seachBtn = By.xpath("//button[@type='submit' and @value='Search']");
+	private static By firstResult = By.xpath("//div[@id='srp-river-results']/ul/li[1]/div/div[2]/a");
+	private static By addToCart = By.id("atcBtn_btn_1");
+	private static By shoppingCartCount = By.xpath("//div[@class='gh-cart']//a/span/span");
+	
+
+	public static void main(String[] args) throws InterruptedException {
+		
+		//System.setProperty("webdriver.chrome.driver", System.getProperty("user.dir")+"\\src\\main\\resources\\chromedriver.exe");
+		WebDriver driver = new ChromeDriver();
+		//WebDriverWait wait = new WebDriverWait(driver, 20);
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+
+
+	        try {
+	            // 1. Open browser & Navigate to eBay
+	            driver.get("https://www.ebay.com");
+	            driver.manage().window().maximize();
+	            
+	            // 2. Search for 'book'
+	            WebElement searchBoxEl = wait.until(ExpectedConditions.visibilityOfElementLocated(searchBox));
+	            
+	            searchBoxEl.sendKeys("book");
+	            driver.findElement(seachBtn).click();
+	            
+	            // 3. Click on the first book in the list
+	            WebElement firstBook = wait.until(ExpectedConditions.visibilityOfElementLocated(firstResult));
+	            firstBook.click();
+	            
+	            //Switch Tabs as a new Tab is created for the Item we click on
+	            Set<String> windowHandles = driver.getWindowHandles();
+	            List<String> windowHandlesList = new ArrayList(windowHandles);
+	            driver.switchTo().window(windowHandlesList.get(1));
+
+	            
+	            // 4. Click on 'Add to cart'
+	            WebElement addToCartButton = wait.until(ExpectedConditions.visibilityOfElementLocated(addToCart));
+	            addToCartButton.click();
+	            
+	            // 5. Verify cart is updated
+	            WebElement cartCount = wait.until(ExpectedConditions.visibilityOfElementLocated(shoppingCartCount));
+	            String strCartCount = cartCount.getText();
+	            //As previously we don't have any items in our cart and we add only one item the cart count should be equal to 1
+	            if(strCartCount.equals("1")) {
+	            	System.out.println("Cart Count is as expected - "+ strCartCount);
+	            }else {
+	            	System.out.println("Cart Count is not as Expected - "+ strCartCount);
+	            }
+	            
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        } finally {
+	            // Close browser
+	            driver.quit();
+	        }
+	}
+}
